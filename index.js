@@ -1,28 +1,27 @@
 const express = require("express");
 const cors = require("cors");
 const { Pool } = require("pg");
+const path = require("path");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Kết nối DB
+// 👉 SERVE FRONTEND
+app.use(express.static(path.join(__dirname, "public")));
+
+// DB
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
 
-// ===== HEALTH CHECK (QUAN TRỌNG CHO RENDER) =====
-app.get("/health", (req, res) => {
-  res.status(200).send("OK");
-});
-
-// ===== ROOT =====
+// ROOT (optional)
 app.get("/", (req, res) => {
-  res.send("Backend Render Project 2 running");
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// ===== API LẤY DANH SÁCH SINH VIÊN =====
+// API students
 app.get("/students", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM students");
@@ -33,7 +32,7 @@ app.get("/students", async (req, res) => {
   }
 });
 
-// ===== START SERVER =====
+// START SERVER
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log("Server running on port", PORT);
